@@ -16,7 +16,8 @@ RUN pip3 install \
     uvicorn \
     numpy \
     soundfile \
-    torch
+    torch \
+    ChatTTS
 
 WORKDIR /app
 
