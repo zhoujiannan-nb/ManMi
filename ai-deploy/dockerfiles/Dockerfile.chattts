@@ -1,0 +1,23 @@
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PIP_INDEX_URL=https://mirrors.bfsu.edu.cn/pypi/web/simple/
+
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --upgrade pip
+
+RUN pip3 install \
+    fastapi \
+    uvicorn \
+    numpy \
+    soundfile \
+    torch
+
+WORKDIR /app
+
+CMD ["python3", "/services/chattts/model_chattts.py"]
