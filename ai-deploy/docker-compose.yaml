@@ -26,27 +26,6 @@ services:
       - ai-net
     # 重要：不要映射 ports！让它只在内网监听
 
-  chattts:
-    image: ai-deploy_chattts:latest
-    container_name: chattts
-    restart: unless-stopped
-    ipc: host
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-    volumes:
-      - /home/models/ChatTTS:/app/models/ChatTTS:ro
-      - /home/ManMi/ai-services/chattts:/app/code
-    working_dir: /app/code
-    command: python model_chattts.py --port 8001 --host 0.0.0.0   # ← 必须指定 --port 8001
-    networks:
-      - ai-net
-    # 不要映射 ports
-
   whisper:
     image: ai-deploy_whisper:latest
     container_name: whisper
@@ -60,10 +39,10 @@ services:
               count: all
               capabilities: [gpu]
     volumes:
-      - /home/models/faster-whisper-large-v3:/app/models/whisper:ro
+      - /home/models/faster-whisper-large-v3:/app/models/faster-whisper-large-v3:ro
       - /home/ManMi/ai-services/whisper:/app/code
     working_dir: /app/code
-    command: python model_whisper.py --port 8002 --host 0.0.0.0   # ← 必须指定 --port 8002
+    command: python3 model_whisper.py --port 8002 --host 0.0.0.0   # ← 必须指定 --port 8002
     networks:
       - ai-net
     # 不要映射 ports
