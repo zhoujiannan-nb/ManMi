@@ -19,4 +19,5 @@ RUN pip3 install \
 
 WORKDIR /app
 
-CMD ["python3", "/services/whisper/model_whisper.py"]
+CMD ["/bin/bash"]
+

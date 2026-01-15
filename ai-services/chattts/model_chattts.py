@@ -1,73 +1,85 @@
-import io
-import soundfile as sf
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
-import ChatTTS
+from pydantic import BaseModel
+import io
+import numpy as np
 import torch
-import uvicorn
-import os
+import torchaudio
 
-app = FastAPI()
+import ChatTTS
 
-# 初始化ChatTTS - 使用本地模型
-chat = ChatTTS.Chat()
+app = FastAPI(title="ChatTTS API")
 
-# 模型路径
-model_path = "/app/models/ChatTTS"
+# 全局加载（容器启动时只加载一次，节省时间）
+chat = None
 
-# 检查模型是否存在
-print(f"检查模型路径: {model_path}")
-if os.path.exists(model_path):
-    print("模型目录存在")
-    # 列出目录内容
-    for item in os.listdir(model_path):
-        print(f"  - {item}")
-else:
-    print("警告: 模型目录不存在")
 
-# 直接从本地加载模型（不下载）
-chat.load_models(compile=False)  # compile=False 可以加快加载速度
+@app.on_event("startup")
+async def startup_event():
+    global chat
+    torch.set_float32_matmul_precision('high')
 
-print("ChatTTS模型加载完成")
+    chat = ChatTTS.Chat()
+    # 重要：使用你挂载的路径
+    chat.load(
+        source='local',
+        local_path='/models/ChatTTS/asset',  # 容器内路径，见 docker-compose volumes
+        compile=False,  # 先 False，内存不够再 True
+    )
+    print("ChatTTS loaded successfully")
+
+
+class TTSRequest(BaseModel):
+    text: str
+    temperature: float = 0.3
+    top_P: float = 0.7
+    top_K: int = 20
+    refine_text_prompt: str = '[oral_2][laugh_0][break_6]'  # 默认自然一点
 
 
 @app.post("/tts")
-async def tts(req: dict):
-    text = req.get("text", "你好，这是一个语音测试")
-    print(f"收到TTS请求: {text}")
+async def tts(request: TTSRequest):
+    if not chat:
+        raise HTTPException(status_code=503, detail="Model not loaded yet")
 
     try:
-        # 生成语音
-        wavs = chat.infer([text], skip_refine_text=False)
+        params_infer_code = {
+            'spk_emb': chat.sample_random_speaker(),  # 随机音色，或你固定一个
+            'temperature': request.temperature,
+            'top_P': request.top_P,
+            'top_K': request.top_K,
+        }
 
-        # 获取音频数据
-        if isinstance(wavs, list) and len(wavs) > 0:
-            wav = wavs[0]
-        else:
-            wav = wavs
+        params_refine_text = {'prompt': request.refine_text_prompt}
 
-        # 转换为numpy数组（如果需要）
-        if torch.is_tensor(wav):
-            wav = wav.cpu().numpy()
+        wavs = chat.infer(
+            [request.text],
+            params_infer_code=params_infer_code,
+            params_refine_text=params_refine_text,
+            use_decoder=True,
+        )
 
-        # 创建音频流
-        buf = io.BytesIO()
-        sf.write(buf, wav, 24000, format="WAV", subtype='PCM_16')
-        buf.seek(0)
+        if not wavs or len(wavs) == 0:
+            raise ValueError("No audio generated")
 
-        print(f"语音生成成功，长度: {len(wav)} 采样点")
-        return StreamingResponse(buf, media_type="audio/wav")
+        audio_np = np.array(wavs[0], dtype=np.float32)
+        audio_tensor = torch.from_numpy(audio_np).unsqueeze(0)  # [1, samples]
+
+        # 转成 wav bytes 流式返回（或直接返回文件）
+        buffer = io.BytesIO()
+        torchaudio.save(buffer, audio_tensor, 24000, format="wav")
+        buffer.seek(0)
+
+        return StreamingResponse(
+            buffer,
+            media_type="audio/wav",
+            headers={"Content-Disposition": "attachment; filename=output.wav"}
+        )
 
     except Exception as e:
-        print(f"生成语音时出错: {str(e)}")
-        return {"error": str(e), "message": "语音生成失败"}
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "model_loaded": True}
-
-
-if __name__ == "__main__":
-    print("启动ChatTTS服务，端口: 8001")
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    return {"status": "ok", "model_loaded": chat is not None}
