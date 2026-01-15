@@ -83,3 +83,13 @@ async def tts(request: TTSRequest):
 @app.get("/health")
 async def health():
     return {"status": "ok", "model_loaded": chat is not None}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        log_level="info",
+        # workers=1   # 單進程就不要開 workers
+    )

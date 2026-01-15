@@ -30,7 +30,7 @@ RUN pip install --no-cache-dir \
     torchaudio==2.4.1
 
 # 3.
-COPY /home/ManMi/ai-deploy/package/ChatTTS-main /app/ChatTTS
+COPY package/ChatTTS-main /app/ChatTTS
 
 # 4. 安装 ChatTTS 的依赖 + 本地源码安装
 # 先装官方常见的依赖，再用 -e 可编辑模式安装本地代码（方便后续改动）
@@ -40,6 +40,7 @@ RUN pip install --no-cache-dir \
     safetensors \
     soundfile \
     fastapi \
+    uvicorn \
     && cd /app/ChatTTS \
     && pip install --no-cache-dir -e .[train]   # [train] 是可选的，如果不需要训练相关依赖可以去掉中括号部分
 
