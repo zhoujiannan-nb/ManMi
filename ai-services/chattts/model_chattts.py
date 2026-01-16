@@ -54,29 +54,6 @@ def init_chattts_cache():
             f.write("# fake to skip remote check\n")
         print("已伪造 .gitattributes")
 
-    # 强制预置 rvcmd 可执行文件，防止 download_all_assets 去下载
-    rvcmd_source = Path("/app/ai-services/chattts/rvcmd")  # 你放 rvcmd 的位置
-    if rvcmd_source.exists() and rvcmd_source.is_file():
-        tmpdir = Path("/tmp/rvcmd_dir")
-        tmpdir.mkdir(parents=True, exist_ok=True)
-        cmdfile = tmpdir / "rvcmd"
-
-        # 复制并加执行权限
-        shutil.copy2(rvcmd_source, cmdfile)
-        cmdfile.chmod(cmdfile.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
-        print(f"已预置 rvcmd 到 {cmdfile}，跳过下载步骤")
-
-        # 可选：patch download_and_extract_tar_gz 函数，让它直接返回（更保险）
-        import ChatTTS.utils.dl as dl_utils
-        def fake_download_and_extract(url, dest):
-            print(f"强制跳过下载 rvcmd: {url}")
-            # 假设已经存在，不做任何事
-            return
-        dl_utils.download_and_extract_tar_gz = fake_download_and_extract
-
-    else:
-        print("未找到 rvcmd 可执行文件，将可能触发下载（请确保 /app/ai-services/chattts/rvcmd 存在）")
-
     # 强制离线模式（双保险）
     os.environ["HF_HUB_OFFLINE"] = "1"
     print("已启用 HF_HUB_OFFLINE=1")
