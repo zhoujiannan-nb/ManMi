@@ -73,7 +73,6 @@ async def startup_event():
     print("ChatTTS 模型加载成功")
 
 
-# 以下部分保持不变（TTSRequest、/tts、/health、if __name__ ...）
 class TTSRequest(BaseModel):
     text: str
     temperature: float = 0.3
