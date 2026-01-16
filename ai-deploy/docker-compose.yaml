@@ -11,7 +11,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: all
+              device_ids: [ '0' ]
               capabilities: [gpu]
     volumes:
       - /home/models/Qwen2.5-7B-Instruct:/models/Qwen2.5-7B-Instruct:ro
@@ -19,7 +19,7 @@ services:
       --model /models/Qwen2.5-7B-Instruct
       --port 8001
       --host 0.0.0.0
-      --gpu-memory-utilization 0.8
+      --gpu-memory-utilization 0.75
       --max-model-len 32768
       --dtype bfloat16
     networks:
@@ -35,7 +35,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: all
+              device_ids: [ '1' ]
               capabilities: [gpu]
     volumes:
       - /home/models/faster-whisper-large-v3:/app/models/faster-whisper-large-v3:ro
@@ -54,7 +54,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: all
+              device_ids: [ '1' ]
               capabilities: [gpu]
     volumes:
       - /home/models/ChatTTS:/models/ChatTTS:ro
