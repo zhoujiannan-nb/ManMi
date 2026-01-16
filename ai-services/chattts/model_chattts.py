@@ -79,7 +79,11 @@ class TTSRequest(BaseModel):
     temperature: float = 0.3
     top_P: float = 0.7
     top_K: int = 20
-    refine_text_prompt: str = '[oral_2][laugh_0][break_6]'
+    refine_text_prompt: str = (
+        "[oral_2][laugh_0][break_6]"
+        # 可选加这些，更自然：
+        # "[speed_5][emotion_happy][pause_2]"
+    )
 
 
 @app.post("/tts")
@@ -89,8 +93,7 @@ async def tts(request: TTSRequest):
 
     try:
         params_infer_code = {
-            'spk_emb': chat.sample_random_speaker(),
-            'temperature': request.temperature,
+            'temperature': (.3, request.temperature)[bool(request.temperature)],
             'top_P': request.top_P,
             'top_K': request.top_K,
         }
@@ -101,6 +104,7 @@ async def tts(request: TTSRequest):
             params_infer_code=params_infer_code,
             params_refine_text=params_refine_text,
             use_decoder=True,
+            skip_refine_text=False,
         )
 
         if not wavs or len(wavs) == 0:
