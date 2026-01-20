@@ -45,25 +45,6 @@ services:
     networks:
       - ai-net
 
-  chattts:
-    image: ai-deploy-chattts:latest
-    container_name: chattts
-    restart: unless-stopped
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: [ '1' ]
-              capabilities: [gpu]
-    volumes:
-      - /home/models/ChatTTS:/models/ChatTTS:ro
-      - /home/ManMi/ai-services:/app/ai-services:ro
-      # 如果还有其他必须挂载的目录，在这里继续加
-    command: python3 /app/ai-services/chattts/model_chattts.py --port 8003 --host 0.0.0.0
-    networks:
-      - ai-net
-
   nginx:
     image: nginx:1.25
     container_name: nginx-gateway

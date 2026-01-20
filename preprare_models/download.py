@@ -9,6 +9,7 @@ os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"  # 香港/大陆加速（202
 
 # 如果 hf-mirror 今天不稳，临时注释上面一行，用官方：
 # os.environ["HF_ENDPOINT"] = "https://huggingface.co"
+# chatts : https://github.com/jianchang512/ChatTTS-ui/releases/download/v1.0/all-models.7z
 
 MODELS = [
     {
@@ -22,12 +23,6 @@ MODELS = [
         "repo_id": "Qwen/Qwen2.5-7B-Instruct",
         "local_dir": os.path.join(MODELS_DIR, "Qwen2.5-7B-Instruct"),
         "note": "标准 Transformers 格式"
-    },
-    {
-        "name": "ChatTTS",
-        "repo_id": "2noise/ChatTTS",
-        "local_dir": os.path.join(MODELS_DIR, "ChatTTS"),
-        "note": "包含 asset 等完整文件"
     }
 ]
 

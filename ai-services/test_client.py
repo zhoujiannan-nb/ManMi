@@ -25,6 +25,7 @@ def test_chattts():
     url = "http://103.219.36.196:9007/chattts/tts"
     data = {
         "text": "你好，这是一个测试音频。",
+        "voice": "3333",
         "temperature": 0.3,
         "top_P": 0.7,
         "top_K": 20
