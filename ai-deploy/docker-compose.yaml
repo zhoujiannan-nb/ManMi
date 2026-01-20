@@ -56,7 +56,6 @@ services:
     depends_on:
       - qwen
       - whisper
-      - chattts
     networks:
       - ai-net
 
