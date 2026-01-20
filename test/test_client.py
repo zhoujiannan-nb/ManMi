@@ -20,12 +20,12 @@ def test_qwen(stream = False):
 
 def test_chattts():
     """Form Data格式请求"""
-
-    url = "http://103.219.36.196:8003/tts"
+    base_url = "http://103.219.36.196:9007/chattts/"
+    url = "http://103.219.36.196:9007/chattts/tts"
 
     # 使用Form Data格式（application/x-www-form-urlencoded）
     data = {
-        "text": "哈基米 你妈妈的蛋 怎么还不下班我靠卧槽尼玛你大爷的王八蛋玩意我丢你大爷",
+        "text": "哈基米",
         "prompt": "[break_6]",
         "voice": "4785.pt",
         "speed": "5",
@@ -43,7 +43,8 @@ def test_chattts():
             result = response.json()
 
             if result.get("code") == 0:
-                audio_url = result.get("url")
+                audio_file = result.get("filename")
+                audio_url = base_url + audio_file.replace("/app", "", 1)
                 audio_response = requests.get(audio_url, timeout=30)
 
                 if audio_response.status_code == 200:
@@ -82,8 +83,8 @@ def test_whisper():
 
 
 def main():
-    # test_qwen()
-    test_chattts()
+    test_qwen()
+    # test_chattts()
     # test_whisper()
 
 if __name__ == "__main__":
