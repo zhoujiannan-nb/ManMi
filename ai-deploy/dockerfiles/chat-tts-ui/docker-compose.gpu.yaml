@@ -1,0 +1,24 @@
+services:
+  chattts:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    container_name: chattts
+    restart: always
+    volumes:
+      - "./:/app"
+    ports:
+      - 8003:8003
+    user: "${UID}:${GID}"
+    environment:
+      LOG_LEVEL: DEBUG
+      WEB_ADDRESS: 0.0.0.0:8003
+      NVIDIA_VISIBLE_DEVICES: all
+    command: python3 app.py
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ '1' ]
+              capabilities: [gpu]

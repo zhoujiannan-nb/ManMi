@@ -19,39 +19,49 @@ def test_qwen(stream = False):
 
 
 def test_chattts():
-    """简化版测试函数"""
+    """Form Data格式请求"""
 
-    # API 配置
-    url = "http://103.219.36.196:9007/chattts/tts"
+    url = "http://103.219.36.196:8003/tts"
+
+    # 使用Form Data格式（application/x-www-form-urlencoded）
     data = {
-        "text": "你好，这是一个测试音频。",
-        "voice": "3333",
-        "temperature": 0.3,
-        "top_P": 0.7,
-        "top_K": 20
+        "text": "哈基米你要干鸡毛我操你妈妈吗的蛋",
+        "prompt": "[break_6]",
+        "voice": "4785.pt",
+        "speed": "5",
+        "temperature": "0.1",
+        "top_p": "0.701",
+        "top_k": "20",
+        "skip_refine": "1"
     }
 
     try:
-        # 发送请求
-        response = requests.post(url, json=data, timeout=30)
+        # 使用Form Data格式发送请求
+        response = requests.post(url, data=data, timeout=30)
 
-        # 检查响应
         if response.status_code == 200:
-            print("✅ 请求成功！")
-            print(f"音频大小: {len(response.content) / 1024:.1f} KB")
+            result = response.json()
 
-            # 保存音频
-            with open("test_output.wav", "wb") as f:
-                f.write(response.content)
-            print("✅ 音频已保存为 test_output.wav")
+            if result.get("code") == 0:
+                audio_url = result.get("url")
+                audio_response = requests.get(audio_url, timeout=30)
 
-        else:
-            print(f"❌ 请求失败: {response.status_code}")
-            print(f"错误信息: {response.text[:200]}")
+                if audio_response.status_code == 200:
+                    with open("test_output.wav", "wb") as f:
+                        f.write(audio_response.content)
+                    print(f"✅ 音频保存成功: {len(audio_response.content) / 1024:.1f}KB")
+                    return True
+                else:
+                    print(f"❌ 音频下载失败: {audio_response.status_code}")
+            else:
+                print(f"❌ TTS失败: {result.get('msg')}")
+
+        print(f"❌ 请求失败: {response.status_code}")
+        return False
 
     except Exception as e:
-        print(f"❌ 测试出错: {str(e)}")
-
+        print(f"❌ 错误: {str(e)}")
+        return False
 
 def test_whisper():
     """测试ASR语音转文字服务"""

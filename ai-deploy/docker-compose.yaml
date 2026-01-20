@@ -45,6 +45,31 @@ services:
     networks:
       - ai-net
 
+  chattts:
+    image: ai-deploy_chattts:latest
+    container_name: chattts
+    restart: always
+    ipc: host
+    volumes:
+      - "/home/ManMi/ai-services/chattts/:/app"
+    ports:
+      - 8003:8003
+    user: "${UID}:${GID}"
+    environment:
+      LOG_LEVEL: DEBUG
+      WEB_ADDRESS: 0.0.0.0:8003
+      NVIDIA_VISIBLE_DEVICES: all
+    command: python3 app.py
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ '1' ]
+              capabilities: [ gpu ]
+    networks:
+      - ai-net
+
   nginx:
     image: nginx:1.25
     container_name: nginx-gateway
@@ -56,6 +81,7 @@ services:
     depends_on:
       - qwen
       - whisper
+      - chattts
     networks:
       - ai-net
 
