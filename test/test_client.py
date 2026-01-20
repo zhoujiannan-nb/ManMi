@@ -25,7 +25,7 @@ def test_chattts():
 
     # 使用Form Data格式（application/x-www-form-urlencoded）
     data = {
-        "text": "哈基米你要干鸡毛我操你妈妈吗的蛋",
+        "text": "哈基米 你妈妈的蛋 怎么还不下班我靠卧槽尼玛你大爷的王八蛋玩意我丢你大爷",
         "prompt": "[break_6]",
         "voice": "4785.pt",
         "speed": "5",
